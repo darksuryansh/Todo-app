@@ -21,7 +21,7 @@ export const register = async (req,res)=>{
         }
         // Find alredy registered user
 
-        const user= await User.findOne(email);
+        const user= await User.findOne({email});
         
         if(user){
             return res.status(403).json({
@@ -42,15 +42,60 @@ export const register = async (req,res)=>{
             email,
             password: hashedPassword
         })
+
         res.status(201).json({
             success:true,
             message:"User registered successfully"
         });
 
-
-
-
     } catch (error) {
+        console.log(error);    
+        
+    }
+}
+
+
+export const login = async(req,res)=>{
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {  // or operstor to check any one field is missing 
+            return res.status(403).json({
+                success: false,
+                message: "All fields are required"
+            })
+
+        }
+
+        const user= await User.findOne({email});
+        
+        if(!user){  // if user does not exist 
+            return res.status(403).json({
+                success:false,
+                message:"User does not exist"
+            })
+
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(!isPasswordValid){
+            return res.status(403).json({
+                success:false,
+                message:"Invalid password"
+            })
+        }  
+        
+        res.status(200).json({
+            success:true,
+            message: `Welcome back ${user.fullname}`
+        });
+
+
+        
+    } catch (error) {
+
+        console.log(error);
+        
         
     }
 }
