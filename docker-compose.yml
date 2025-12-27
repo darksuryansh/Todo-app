@@ -1,0 +1,62 @@
+name: todoapp
+
+services:
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb 
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - todoapp-network
+    
+  server:
+    build:
+      context: ./server
+
+      dockerfile: Dockerfile
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    ports:
+      - '3000:3000'
+    networks:
+      - todoapp-network
+    depends_on:
+      - mongo
+    command: npm run dev 
+     
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+    ports:
+      - '5173:5173'
+
+    networks:
+      - todoapp-network
+
+    depends_on:
+      - server
+    command: npm run dev 
+
+volumes:
+  mongo-data:
+
+networks:
+  todoapp-network:
+    driver: bridge
+
+
+  
+  
